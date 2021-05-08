@@ -1,71 +1,84 @@
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import java.security.*;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.util.Base64;
 
-
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 public class PublicPrivateKey {
+    public static void main(String args[]) throws Exception {
 
-    public static SecretKey createAESKey(int keysize)
-            throws Exception
-    {
-        SecureRandom securerandom
-                = new SecureRandom();
-        KeyGenerator keygenerator
-                = KeyGenerator.getInstance("AES");
 
-        keygenerator.init(keysize, securerandom);
-        SecretKey key
-                = keygenerator.generateKey();
+        //Creating KeyPair generator object
+        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
 
-        return key;
+        //Initializing the key pair generator
+        keyPairGen.initialize(2048);
+
+        //Generate the pair of keys
+        KeyPair pair = keyPairGen.generateKeyPair();
+
+        //Getting the public key from the key pair
+        PublicKey publicKey = pair.getPublic();
+        PrivateKey privateKey = pair.getPrivate();
+
+
+        System.out.println("----------Private Key--------");
+        String privateKeyStr = Base64.getMimeEncoder().encodeToString(privateKey.getEncoded());
+        System.out.println(privateKeyStr);
+
+        System.out.println("----------Public Key--------");
+        String publicKeyStr = Base64.getMimeEncoder().encodeToString(publicKey.getEncoded());
+        System.out.println(publicKeyStr);
+
+        SecretKey Symmetrickey = SymmetricKey.createAESKey(128);
+
+        String symmetricKeyStr = Base64.getMimeEncoder().encodeToString(Symmetrickey.getEncoded());
+        System.out.println("----------Symmetric Key--------");
+        System.out.println(symmetricKeyStr);
+
+
+        //Creating a Cipher object
+        Cipher cipher = Cipher.getInstance("RSA");
+
+        //Initializing a Cipher object
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+
+        //Add data to the cipher
+        byte[] input = symmetricKeyStr.getBytes();
+        cipher.update(input);
+
+        //encrypting the data
+        byte[] cipherText = cipher.doFinal();
+        System.out.println("---------Encrypted---------");
+        System.out.println(new String(cipherText, StandardCharsets.UTF_8));
+
+        //Initializing the same cipher for decryption
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+        //Decrypting the text
+        System.out.println("---------Decrypted---------");
+        byte[] decipheredText = cipher.doFinal(cipherText);
+        System.out.println(new String(decipheredText));
     }
 
-    public static void main(String[] args) {
+    public static class SymmetricKey {
 
+        public static SecretKey createAESKey(int keySize)
+                throws Exception {
+            SecureRandom securerandom = new SecureRandom();
+            KeyGenerator keygenerator = KeyGenerator.getInstance("AES");
 
-        try {
-            KeyPairGenerator KeyPairGenerator;
-            KeyPairGenerator = java.security.KeyPairGenerator.getInstance("RSA");
-            KeyPairGenerator.initialize(1024);
-            KeyPair keyPair = KeyPairGenerator.generateKeyPair();
+            keygenerator.init(keySize, securerandom);
 
-            PublicKey publicA = keyPair.getPublic();
-            PrivateKey privateA = keyPair.getPrivate();
-
-            System.out.println("----------Private Key--------");
-            System.out.println (Base64.getMimeEncoder().encodeToString( privateA.getEncoded()));
-            System.out.println("----------Public Key--------");
-            System.out.println (Base64.getMimeEncoder().encodeToString( publicA.getEncoded()));
-
-
-            SecretKey Symmetrickey
-                    = createAESKey(128);
-
-            System.out.println("----------Symmetric Key--------");
-
-            System.out.println(Base64.getMimeEncoder().encodeToString( Symmetrickey.getEncoded()));
-
-
-
-
-            String originalString = Base64.getMimeEncoder().encodeToString(Symmetrickey.getEncoded());
-            String encryptedString = AES.encrypt(originalString, Base64.getMimeEncoder().encodeToString(publicA.getEncoded())) ;
-            String decryptedString = AES.decrypt(encryptedString, Base64.getMimeEncoder().encodeToString(privateA.getEncoded())) ;
-
-            System.out.println(originalString);
-            System.out.println(encryptedString);
-            System.out.println(decryptedString);
-
-
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
+            return keygenerator.generateKey();
         }
-
-
     }
+
 
 }
