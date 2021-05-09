@@ -1,13 +1,20 @@
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.Base64;
-
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 public class PublicPrivateKey {
-    public static void main(String args[]) throws Exception {
+
+
+    public static String symmetricKeyGenerator(int keySize) throws Exception {
+        SecretKey symmetricKey = SymmetricKey.createAESKey(keySize);
+        return Base64.getMimeEncoder().encodeToString(symmetricKey.getEncoded());
+
+    }
+
+    public static void main(String...args) throws Exception {
 
 
         //Creating KeyPair generator object
@@ -32,10 +39,10 @@ public class PublicPrivateKey {
         String publicKeyStr = Base64.getMimeEncoder().encodeToString(publicKey.getEncoded());
         System.out.println(publicKeyStr);
 
-        SecretKey Symmetrickey = SymmetricKey.createAESKey(128);
 
-        String symmetricKeyStr = Base64.getMimeEncoder().encodeToString(Symmetrickey.getEncoded());
-        System.out.println("----------Symmetric Key--------");
+
+        String symmetricKeyStr = symmetricKeyGenerator(128);
+        System.out.println("----------Symmetric Key 128 bit--------");
         System.out.println(symmetricKeyStr);
 
         //Creating a Cipher object
