@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AES {
     // 16 chars -> 16 bytes -> 128 bits key, 32 chars -> 32 bytes -> 256 bits
+
     private static  String[] keys = null;
 
     static {
@@ -110,14 +111,17 @@ public class AES {
 
 
 
-
+// m
 
     /**
      * Produces random string
      *
+     *
+     *
      * @param keySize is in bits
      * @return produced random string
      */
+
     public static String randomString(int keySize) {
         int size = keySize / 8;
         String str = "";
