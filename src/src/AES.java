@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class AES {
@@ -22,7 +23,7 @@ public class AES {
     }
 
     private static String[] initVectors;
-    private static String path = "C:\\Users\\hrnoz\\IdeaProjects\\OzdemirHrn-Security-HW-1\\src\\";
+    private static String path = "C:\\Users\\malik türkoğlu\\Desktop\\Security-HW-1\\src\\";
 
 
     public static void main(String[] args) throws Exception {
@@ -32,9 +33,19 @@ public class AES {
 //        System.out.println("--------------------Encoded image--------------------\n" + originalImage);
 //        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
-        AES(originalImage, 128);
+        Scanner scan = new Scanner(System.in);
+        System.out.print("Please Enter 1 For AES-CBC Mode ");
+        System.out.print("Please Enter 2 For AES-CTR Mode ");
+        int num = scan.nextInt();
+        // Closing Scanner after the use
+        scan.close();
 
-
+        if(num == 1){
+            AES(originalImage, 128);
+        }
+        else if(num == 2){
+            AESCTR(originalImage, 128);
+        }
     }
 
     public static void initializeIV() {
@@ -42,6 +53,30 @@ public class AES {
     }
 
     public static void AES(String originalImage, int keySize) {
+
+        // Encryption
+        // c) timer start
+        initializeIV();
+        String encrypted = encrypt(originalImage, keySize);
+        // timer stop
+        System.out.println("--------------------a) Encryption by AES 128 bit key--------------------");
+        System.out.println(encrypted);
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+
+        //Decryption
+        String decrypted = decrypt(encrypted, keySize);
+        System.out.println("--------------------b) Decryption--------------------");
+        System.out.println(decrypted);
+        System.out.println("\n\nAre decrypted string and original string the same?: " + originalImage.equals(decrypted));
+
+
+        System.out.println("\n\n--------------------d) Different IV--------------------");
+        initializeIV();
+        System.out.println("Are cipher texts the same?: " + encrypted.equals(encrypt(originalImage, keySize)));
+    }
+
+
+    public static void AESCTR(String originalImage, int keySize) {
         SecureRandom secureRandom = new SecureRandom();
         byte[] nonce = new byte[12]; // 96 bits
         secureRandom.nextBytes(nonce);
@@ -49,7 +84,7 @@ public class AES {
         // c) timer start
         long start = System.nanoTime();
         initializeIV();
-        String encrypted = encrypt(originalImage, keySize, nonce);
+        String encrypted = encryptCTR(originalImage, keySize, nonce);
         long elapsedTimeOfEncryption = System.nanoTime() - start;
 
         // timer stop
@@ -58,7 +93,7 @@ public class AES {
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
         //Decryption
-        String decrypted = decrypt(encrypted, keySize, nonce);
+        String decrypted = decryptCTR(encrypted, keySize, nonce);
         System.out.println("--------------------b) Decryption--------------------");
         System.out.println(decrypted);
         System.out.println("\n\nAre decrypted string and original string the same?: " + originalImage.equals(decrypted));
@@ -66,12 +101,16 @@ public class AES {
 
         System.out.println("\n\n--------------------d) Different IV--------------------");
         initializeIV();
-        System.out.println("Are cipher texts the same?: " + encrypted.equals(encrypt(originalImage, keySize, nonce)));
+        System.out.println("Are cipher texts the same?: " + encrypted.equals(encryptCTR(originalImage, keySize, nonce)));
 
 
         long convert = TimeUnit.MILLISECONDS.convert(elapsedTimeOfEncryption, TimeUnit.NANOSECONDS);
         System.out.println("\nEncryption Time is "+convert);
     }
+
+
+
+
 
     /**
      * Produces random string
@@ -117,7 +156,33 @@ public class AES {
      * @param keySize is in bits
      * @return encrypted string or null
      */
-    public static String encrypt(String value, int keySize, byte[] nonce) {
+    public static String encrypt(String value, int keySize) {
+        String key, initVector;
+        if (keySize == 128){
+            key = keys[0];
+            initVector = initVectors[0];
+        }
+        else{
+            key = keys[1];
+            initVector = initVectors[1];
+        }
+        try {
+            IvParameterSpec iv = new IvParameterSpec(initVector.getBytes(StandardCharsets.UTF_8));
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, iv);
+
+            byte[] encrypted = cipher.doFinal(value.getBytes());
+            return Base64.getEncoder().encodeToString(encrypted);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+
+    public static String encryptCTR(String value, int keySize, byte[] nonce) {
         String key, initVector;
         if (keySize == 128) {
             key = keys[0];
@@ -132,9 +197,6 @@ public class AES {
             System.arraycopy(nonce, 0, ivCTR, 0, nonce.length);
             IvParameterSpec ivSpec = new IvParameterSpec(ivCTR);
 
-
-
-            IvParameterSpec iv = new IvParameterSpec(initVector.getBytes(StandardCharsets.UTF_8));
             SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
 
             Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
@@ -147,7 +209,6 @@ public class AES {
         }
         return null;
     }
-
     /**
      * AES Decryption
      *
@@ -155,7 +216,7 @@ public class AES {
      * @param keySize   is in bits
      * @return decrypted string or null
      */
-    public static String decrypt(String encrypted, int keySize, byte[] nonce) {
+    public static String decryptCTR(String encrypted, int keySize, byte[] nonce) {
         String key, initVector;
         if (keySize == 128) {
             key = keys[0];
@@ -170,9 +231,6 @@ public class AES {
             System.arraycopy(nonce, 0, ivCTR, 0, nonce.length);
             IvParameterSpec ivSpec = new IvParameterSpec(ivCTR);
 
-
-
-            IvParameterSpec iv = new IvParameterSpec(initVector.getBytes(StandardCharsets.UTF_8));
             SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
 
             Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
@@ -180,6 +238,31 @@ public class AES {
 
 
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivSpec);
+            byte[] original = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+
+            return new String(original);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+    public static String decrypt(String encrypted, int keySize) {
+        String key, initVector;
+        if (keySize == 128){
+            key = keys[0];
+            initVector = initVectors[0];
+        }
+        else{
+            key = keys[1];
+            initVector = initVectors[1];
+        }
+        try {
+            IvParameterSpec iv = new IvParameterSpec(initVector.getBytes(StandardCharsets.UTF_8));
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, iv);
             byte[] original = cipher.doFinal(Base64.getDecoder().decode(encrypted));
 
             return new String(original);

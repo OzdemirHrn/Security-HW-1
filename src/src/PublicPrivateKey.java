@@ -7,7 +7,7 @@ import javax.crypto.SecretKey;
 
 public class PublicPrivateKey {
 
-
+// creating symmetricKey
     public static String symmetricKeyGenerator(int keySize) throws Exception {
         SecretKey symmetricKey = SymmetricKey.createAESKey(keySize);
         return Base64.getMimeEncoder().encodeToString(symmetricKey.getEncoded());
@@ -17,38 +17,36 @@ public class PublicPrivateKey {
     public static void main(String...args) throws Exception {
 
 
-        //Creating KeyPair generator object
+        //Creating KeyPair with RSA
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
-
-        //Initializing the key pair generator
         keyPairGen.initialize(2048);
 
-        //Generate the pair of keys
+        //we are generating the pair of keys
         KeyPair pair = keyPairGen.generateKeyPair();
 
-        //Getting the public key from the key pair
+        //we are generating the public key from the key pair
+        // we are generating the private key from the key pair
         PublicKey publicKey = pair.getPublic();
         PrivateKey privateKey = pair.getPrivate();
 
-
+        // we are converting to private key to string. and printing this string
         System.out.println("----------Private Key--------");
         String privateKeyStr = Base64.getMimeEncoder().encodeToString(privateKey.getEncoded());
         System.out.println(privateKeyStr);
 
+        // we are converting to public key to string. and printing this string
         System.out.println("----------Public Key--------");
         String publicKeyStr = Base64.getMimeEncoder().encodeToString(publicKey.getEncoded());
         System.out.println(publicKeyStr);
 
 
-
+        // Creating new Symmetrickey with 128 keySize and we are printing this symmetricKey
         String symmetricKeyStr = symmetricKeyGenerator(128);
         System.out.println("----------Symmetric Key 128 bit--------");
         System.out.println(symmetricKeyStr);
 
-        //Creating a Cipher object
+        //Creating new Cipher with RSA
         Cipher cipher = Cipher.getInstance("RSA");
-
-        //Initializing a Cipher object
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 
         //Add data to the cipher
@@ -70,7 +68,7 @@ public class PublicPrivateKey {
 
 
         System.out.println("\nSENDER");
-
+//
         String originalString = "Kobe Bean Bryant (August 23, 1978 \u2013 January 26, 2020) was an American professional basketball player. A shooting guard, he spent his entire 20-year career with the Los Angeles Lakers in the National Basketball Association (NBA). Regarded as one of the greatest players of all time, Bryant won five NBA championships, was an 18-time All-Star, a 15-time member of the All-NBA Team, a 12-time member of the All-Defensive Team, the 2008 NBA Most Valuable Player (MVP), and a two-time NBA Finals MVP. Bryant also led the NBA in scoring twice, and ranks fourth in league all-time regular season and postseason scoring.\n" +
                 "\n" +
                 "Born in Philadelphia and partly raised in Italy, Bryant was recognized as the top American high-school basketball player while at Lower Merion. The son of former NBA player Joe Bryant, he declared for the 1996 NBA draft and was selected by the Charlotte Hornets with the 13th overall pick; he was then traded to the Lakers. As a rookie, Bryant earned a reputation as a high-flyer by winning the 1997 Slam Dunk Contest, and was named an All-Star by his second season. Despite a feud with teammate Shaquille O'Neal, the pair led the Lakers to three consecutive NBA championships from 2000 to 2002. In 2003, Bryant was charged with sexual assault; criminal charges were dropped after the accuser refused to testify, and a civil suit was settled out of court, with Bryant issuing a public apology and admitting to a consensual sexual encounter.\n" +
@@ -120,7 +118,7 @@ public class PublicPrivateKey {
 
 
     }
-
+// convert to bytes to hex
     private static String bytesToHex(byte[] hash) {
         StringBuilder hexString = new StringBuilder(2 * hash.length);
         for (int i = 0; i < hash.length; i++) {
@@ -132,7 +130,6 @@ public class PublicPrivateKey {
         }
         return hexString.toString();
     }
-
 public static class SymmetricKey {
 
         public static SecretKey createAESKey(int keySize)
