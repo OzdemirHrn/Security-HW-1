@@ -3,6 +3,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -24,15 +25,15 @@ public class AES {
     }
 
     private static String[] initVectors;
-    private static String path = "C:\\Users\\malik türkoğlu\\Desktop\\Security-HW-1\\src\\";
+    private static String path = "C:\\Users\\hrnoz\\IdeaProjects\\OzdemirHrn-Security-HW-1\\src\\";
 
 
     public static void main(String[] args) throws Exception {
 
         File f = new File(path + "jordan.jpg");
         String originalImage = encodeFileToBase64Binary(f);
-//        System.out.println("--------------------Encoded image--------------------\n" + originalImage);
-//        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+//      System.out.println("--------------------Encoded image--------------------\n" + originalImage);
+//      System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
         Scanner scan = new Scanner(System.in);
         System.out.print("Please Enter 1 For AES-CBC Mode ");
@@ -53,65 +54,75 @@ public class AES {
         initVectors = new String[]{randomString(128), randomString(256)};
     }
 
-    public static void AES(String originalImage, int keySize) {
+    public static void AES(String originalImage, int keySize) throws IOException {
 
         // Encryption
-        // c) timer start
+        long start = System.nanoTime();
         initializeIV();
         String encrypted = encrypt(originalImage, keySize);
-        // timer stop
-        System.out.println("--------------------a) Encryption by AES 128 bit key--------------------");
-        System.out.println(encrypted);
-        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        long elapsedTimeOfEncryption = System.nanoTime() - start;
+        long convert = TimeUnit.MILLISECONDS.convert(elapsedTimeOfEncryption, TimeUnit.NANOSECONDS);
+
+        FileOperations.createInputfile("OriginalImage").write(originalImage);
+
+        System.out.println("a) Encryption by AES AES "+keySize);
+        System.out.println("Wrote to the file named Encrypted AES "+keySize);
+        FileOperations.createInputfile("Encrypted AES "+keySize).write(encrypted);
 
         //Decryption
         String decrypted = decrypt(encrypted, keySize);
-        System.out.println("--------------------b) Decryption--------------------");
-        System.out.println(decrypted);
-        System.out.println("\n\nAre decrypted string and original string the same?: " + originalImage.equals(decrypted));
+        System.out.println("\nb) Decryption by AES "+keySize);
+        System.out.println("Wrote to the file named Decrypted AES "+keySize);
+        FileOperations.createInputfile("Decrypted AES "+keySize).write(decrypted);
+        System.out.println("\nAre decrypted string and original string the same?: " + originalImage.equals(decrypted));
 
+        //part c
+        System.out.println("\nc)Encryption Time is "+convert);
 
-        System.out.println("\n\n--------------------d) Different IV--------------------");
+        System.out.println("\nd) Different IV");
         initializeIV();
         System.out.println("Are cipher texts the same?: " + encrypted.equals(encrypt(originalImage, keySize)));
     }
 
 
-    public static void AESCTR(String originalImage, int keySize) {
+    public static void AESCTR(String originalImage, int keySize) throws IOException {
         SecureRandom secureRandom = new SecureRandom();
         byte[] nonce = new byte[12]; // 96 bits
         secureRandom.nextBytes(nonce);
+
+
         // Encryption
-        // c) timer start
         long start = System.nanoTime();
         initializeIV();
         String encrypted = encryptCTR(originalImage, keySize, nonce);
         long elapsedTimeOfEncryption = System.nanoTime() - start;
 
-        // timer stop
-        System.out.println("--------------------a) Encryption by AES 128 bit key--------------------");
-        System.out.println(encrypted);
-        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        long convert = TimeUnit.MILLISECONDS.convert(elapsedTimeOfEncryption, TimeUnit.NANOSECONDS);
+
+        FileOperations.createInputfile("OriginalImage").write(originalImage);
+
+
+        System.out.println("a) Encryption by CTR "+keySize);
+        System.out.println("Wrote to the file named Encrypted CTR "+keySize);
+        FileOperations.createInputfile("Encrypted CTR "+keySize).write(encrypted);
 
         //Decryption
         String decrypted = decryptCTR(encrypted, keySize, nonce);
-        System.out.println("--------------------b) Decryption--------------------");
-        System.out.println(decrypted);
-        System.out.println("\n\nAre decrypted string and original string the same?: " + originalImage.equals(decrypted));
+        System.out.println("\nb) Decryption by CTR "+keySize);
+        System.out.println("Wrote to the file named Decrypted CTR "+keySize);
+        FileOperations.createInputfile("Decrypted CTR "+keySize).write(decrypted);
+        System.out.println("\nAre decrypted string and original string the same?: " + originalImage.equals(decrypted));
 
-
-        System.out.println("\n\n--------------------d) Different IV--------------------");
+        //part c
+        System.out.println("\nc)Encryption Time is "+convert);
+        //part d
+        System.out.println("\nd) Different IV");
         initializeIV();
         System.out.println("Are cipher texts the same?: " + encrypted.equals(encryptCTR(originalImage, keySize, nonce)));
-
-
-        long convert = TimeUnit.MILLISECONDS.convert(elapsedTimeOfEncryption, TimeUnit.NANOSECONDS);
-        System.out.println("\nEncryption Time is "+convert);
     }
 
 
 
-// m
 
     /**
      * Produces random string
