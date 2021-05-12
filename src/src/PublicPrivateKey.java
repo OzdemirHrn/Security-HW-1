@@ -17,9 +17,9 @@ public class PublicPrivateKey {
      * @param keySize 128 bit or 256 bit key size
      * @return String format of symmetric key
      */
-    public static String symmetricKeyGenerator(int keySize) throws Exception {
+    public static byte[] symmetricKeyGenerator(int keySize) throws Exception {
         SecretKey symmetricKey = SymmetricKey.createAESKey(keySize);
-        return Base64.getMimeEncoder().encodeToString(symmetricKey.getEncoded());
+        return (symmetricKey.getEncoded());
 
     }
 
@@ -51,12 +51,12 @@ public class PublicPrivateKey {
 
 
         // Creating new Symmetric key with 128 keySize and we are printing this symmetricKey
-        String symmetricKeyStr128 = symmetricKeyGenerator(128);
+        String symmetricKeyStr128 = Base64.getMimeEncoder().encodeToString(symmetricKeyGenerator(128));
         System.out.println("----------Symmetric Key 128 bit--------");
         System.out.println(symmetricKeyStr128);
 
         // Creating new Symmetric key with 256 keySize and we are printing this symmetricKey
-        String symmetricKeyStr256 = symmetricKeyGenerator(256);
+        String symmetricKeyStr256 = Base64.getMimeEncoder().encodeToString(symmetricKeyGenerator(256));
         System.out.println("----------Symmetric Key 256 bit--------");
         System.out.println(symmetricKeyStr256);
 

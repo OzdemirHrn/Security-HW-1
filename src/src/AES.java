@@ -13,12 +13,13 @@ import java.util.concurrent.TimeUnit;
 public class AES {
     // 16 chars -> 16 bytes -> 128 bits key, 32 chars -> 32 bytes -> 256 bits
 
-    private static  String[] keys = null;
+    private static  byte[][] keys = null;
 
     static {
         try {
-            keys = new String[]{PublicPrivateKey.symmetricKeyGenerator(128),
-                    PublicPrivateKey.symmetricKeyGenerator(256)};
+            keys = new byte[2][];
+            keys[0]=PublicPrivateKey.symmetricKeyGenerator(128);
+            keys[1]=PublicPrivateKey.symmetricKeyGenerator(256);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -39,14 +40,16 @@ public class AES {
         System.out.print("Please Enter 1 For AES-CBC Mode ");
         System.out.print("Please Enter 2 For AES-CTR Mode ");
         int num = scan.nextInt();
+        System.out.println("Please Enter Key Size");
+        int keySize = scan.nextInt();
         // Closing Scanner after the use
         scan.close();
 
         if(num == 1){
-            AES(originalImage, 128);
+            AES(originalImage, keySize);
         }
         else if(num == 2){
-            AESCTR(originalImage, 128);
+            AESCTR(originalImage, keySize);
         }
     }
 
@@ -172,18 +175,18 @@ public class AES {
      * @return encrypted string or null
      */
     public static String encrypt(String value, int keySize) {
-        String key, initVector;
+        byte[] key; String initVector;
         if (keySize == 128){
             key = keys[0];
             initVector = initVectors[0];
         }
         else{
             key = keys[1];
-            initVector = initVectors[1];
+            initVector = initVectors[0];
         }
         try {
             IvParameterSpec iv = new IvParameterSpec(initVector.getBytes(StandardCharsets.UTF_8));
-            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
 
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, iv);
@@ -198,13 +201,11 @@ public class AES {
 
 
     public static String encryptCTR(String value, int keySize, byte[] nonce) {
-        String key, initVector;
+        byte[] key; String initVector;
         if (keySize == 128) {
             key = keys[0];
-            initVector = initVectors[0];
         } else {
             key = keys[1];
-            initVector = initVectors[1];
         }
         try {
 
@@ -212,7 +213,7 @@ public class AES {
             System.arraycopy(nonce, 0, ivCTR, 0, nonce.length);
             IvParameterSpec ivSpec = new IvParameterSpec(ivCTR);
 
-            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
 
             Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivSpec);
@@ -232,13 +233,11 @@ public class AES {
      * @return decrypted string or null
      */
     public static String decryptCTR(String encrypted, int keySize, byte[] nonce) {
-        String key, initVector;
+        byte[] key; String initVector;
         if (keySize == 128) {
             key = keys[0];
-            initVector = initVectors[0];
         } else {
             key = keys[1];
-            initVector = initVectors[1];
         }
         try {
 
@@ -246,7 +245,7 @@ public class AES {
             System.arraycopy(nonce, 0, ivCTR, 0, nonce.length);
             IvParameterSpec ivSpec = new IvParameterSpec(ivCTR);
 
-            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
 
             Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
 
@@ -263,18 +262,18 @@ public class AES {
         return null;
     }
     public static String decrypt(String encrypted, int keySize) {
-        String key, initVector;
+        byte[] key; String initVector;
         if (keySize == 128){
             key = keys[0];
             initVector = initVectors[0];
         }
         else{
             key = keys[1];
-            initVector = initVectors[1];
+            initVector = initVectors[0];
         }
         try {
             IvParameterSpec iv = new IvParameterSpec(initVector.getBytes(StandardCharsets.UTF_8));
-            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
 
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, iv);
