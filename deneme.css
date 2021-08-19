@@ -1,0 +1,14 @@
+.custom-placeholer-color input::placeholder {
+  color: red !important;
+  opacity: 1;
+}
+
+.custom-label-color .v-label {
+  color: red;
+  opacity: 1;
+}
+
+.custom-placeholer-color input,
+.custom-label-color input {
+  color: red !important;
+}
